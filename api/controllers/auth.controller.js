@@ -1,25 +1,25 @@
 import admin from "firebase-admin";
 import User from "../models/User.js";
+import { errorHandler } from "../utils/error.js";
 
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
   if(!name || !email || !password || name==='' || email==='' || password===''){
-    return res.status(400).json({message: 'fill all the information'})
+    return next(errorHandler(400, "fill all the information"));
   }
 
   try {
     const FindUser = await User.findOne({email});
-    console.log(FindUser);
     if(FindUser){
-        return res.status(400).json({message: 'user already exist'})
+      return next(errorHandler(400, 'user already exist'))
     }
     else{
         const userRecord = await admin.auth().createUser({
             displayName: name,
             email: email,
             password: password,
-            emailVerified: false,
         });
+        console.log(userRecord)
         const firebaseId = userRecord.uid;
         const newUser = new User({
             firebaseId,
@@ -31,55 +31,77 @@ export const register = async (req, res) => {
         return res.status(201).json({ message: 'User created successfully.' }); 
     }
   } catch (error) {
-    console.error('Error creating user:', error);
-
     if (error.code === 'auth/email-already-exists') {
-      return res.status(400).json({ error: 'Email already in use.' }); 
-    } else if (error.code === 'auth/weak-password') {
-      return res.status(400).json({ error: 'Password is too weak.' });
+      return next(errorHandler(400, 'Email already in use.'))
+    } else if (error.code === 'auth/invalid-password') {
+      return next(errorHandler( 400, 'Password is too weak.'))
     } 
 
-    return res.status(500).json({ error: 'An error occurred during user registration.' });
+    return next(errorHandler( 500, 'An error occurred during user registration.'))
   }
 };
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { idToken } = req.body;
 
   try {
-    const userCredential = await admin.auth().signInWithEmailAndPassword(email, password);
-    const user = userCredential.user;
-    console.log(userCredential);
-
-    
-    return res.status(200).json({ message: 'Login successful', uid: user.uid }); 
-  } catch (error) {
-    console.error('Login error:', error);
-
-    if (error.code === 'auth/user-not-found') {
-      return res.status(401).json({ error: 'User not found.' });
-    } else if (error.code === 'auth/wrong-password') {
-      return res.status(401).json({ error: 'Invalid password.' });
+    if (!idToken) {
+      return next(errorHandler(400, 'ID token is required' ))
     }
 
-    return res.status(500).json({ error: 'An error occurred during login.' });
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+    const { uid, email, name } = decodedToken;
+
+    return res
+              .status(201)
+              .cookie("access_token", idToken,{httpOnly: true,})
+              .json({ message: 'Login successful', uid: uid }); 
+  } catch (error) {
+    if (error.code === 'auth/user-not-found') {
+      return next(errorHandler(401, 'User not found.' ))
+    } else if (error.code === 'auth/wrong-password') {
+      return next(errorHandler(401, 'Invalid password.' ))
+    }
+
+    return next(errorHandler(500, 'An error occurred during login.' ))
   }
 };
 
 export const googleAuth = async (req, res) => {
-  const {name, email, photoURL} = req.body;
-   const FindUser = await User.findOne({email});
-   try{
-        if(FindUser){
-            //login logic
-        }
-    
-        else{
-            //register logic
-        }
-   }
-   catch(err){
-    console.log(err);
-    return res.status(500).json({message: "internal server error"})
-   }
+  const { idToken } = req.body;
+  
+  try {
+    if (!idToken) {
+      return next(errorHandler(400, 'ID token is required' ))
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+    const { uid, email, name } = decodedToken;
+
+    const FindUser = await User.findOne({email});
+    if(!FindUser){
+      const newUser = new User({
+        uid: uid,
+        name: name,
+        email: email,
+      })
+
+      await newUser.save();
+    }
+
+    return res
+              .status(201)
+              .cookie("access_token", idToken,{httpOnly: true,})
+              .json({ message: 'Login successful', uid: uid }); 
+  } catch (error) {
+    if (error.code === 'auth/user-not-found') {
+      return next(errorHandler(401, 'User not found.' ))
+    } else if (error.code === 'auth/wrong-password') {
+      return next(errorHandler(401, 'Invalid password.' ))
+    }
+
+    return next(errorHandler(500, 'An error occurred during login.' ))
+  }
 };
