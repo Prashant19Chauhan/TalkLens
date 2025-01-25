@@ -3,6 +3,7 @@ import './config/db.js';
 import { initializeFirebase } from './firebase/firebaseConfig.js';
 import userRoute from './routes/user.routes.js'
 import authRoute from './routes/auth.routes.js'
+import meetingRoute from './routes/meetingRoutes.js'
 
 const app = express()
 app.use(express.json());
@@ -20,6 +21,8 @@ app.listen(port, () => {
 
 app.use('/api/user', userRoute)
 app.use('/api/auth', authRoute)
+
+app.use('/api/meeting', meetingRoute)
 
 app.use((err, req,res, next)=>{
   const statusCode = err.statusCode || 500;

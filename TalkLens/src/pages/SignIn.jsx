@@ -2,12 +2,12 @@ import OAuth from '../components/OAuth';
 import { useState } from 'react';
 import {signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../firebase'; 
-import { data, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
 import {loginStart, loginFailure, loginSuccess} from '../redux/userSlice'
 
 
-const SignIn = ({ setLogin }) => {
+const SignIn = ( ) => {
   const [formData, setFormData] = useState({});
   const {loading, error: errorMessage} = useSelector(state => state.user);
   const dispatch = useDispatch();

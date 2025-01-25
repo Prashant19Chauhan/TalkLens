@@ -41,7 +41,7 @@ export const register = async (req, res, next) => {
   }
 };
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   const { idToken } = req.body;
 
   try {
@@ -56,7 +56,7 @@ export const login = async (req, res) => {
     return res
               .status(201)
               .cookie("access_token", idToken,{httpOnly: true,})
-              .json({ message: 'Login successful', uid: uid }); 
+              .json({ message: 'Login successful', uid: uid, name: name, email:email }); 
   } catch (error) {
     if (error.code === 'auth/user-not-found') {
       return next(errorHandler(401, 'User not found.' ))
@@ -68,7 +68,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const googleAuth = async (req, res) => {
+export const googleAuth = async (req, res, next) => {
   const { idToken } = req.body;
   
   try {
@@ -94,7 +94,7 @@ export const googleAuth = async (req, res) => {
     return res
               .status(201)
               .cookie("access_token", idToken,{httpOnly: true,})
-              .json({ message: 'Login successful', uid: uid }); 
+              .json({ message: 'Login successful', uid: uid, name: name, email: email }); 
   } catch (error) {
     if (error.code === 'auth/user-not-found') {
       return next(errorHandler(401, 'User not found.' ))

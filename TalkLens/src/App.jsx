@@ -1,4 +1,4 @@
-import {BrowserRouter, Routes, Route} from "react-router-dom"
+import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom"
 
 import LandingPage from "./pages/landingPage"
 import Header from "./pages/header"
@@ -13,7 +13,6 @@ import PricingPage from "./pages/PricingPage"
 import ContactPage from "./pages/ContactPage"
 
 import { useSelector } from "react-redux"
-import { useState } from "react"
 
 function App() { 
   const { currentUser } = useSelector(state=> state.user);
@@ -23,13 +22,17 @@ function App() {
       <BrowserRouter>
         <Header/>
         <Routes>
-          <Route path="/" element={currentUser? <CreateJoinMeeting/> : <LandingPage/>}/>
+          <Route path="/landing" element={<LandingPage/>}/>
+          <Route path="/meeting" element={<MeetingRoom roomId={"p1s3d4ccc44b333"}/>}/>
+          <Route path="/" element={currentUser? <CreateJoinMeeting/> : <Navigate to="/landing"/>}/>
           <Route path="/features" element={<FeaturesPage/>}/>
           <Route path="/Pricing" element={<PricingPage/>}/>
           <Route path="/contact" element={<ContactPage/>}/>
+          <Route path="/logout" element={currentUser?<Logout/> : <Navigate to="/login"/>}/>
           
-          <Route path="/login" element={currentUser?<Logout/>:<SignIn />}/>
-          <Route path="/register" element={currentUser?<Logout/>:<SignUp/>}/>
+          <Route path="/login" element={currentUser?<Navigate to="/"/>:<SignIn />}/>
+          <Route path="/register" element={currentUser?<Navigate to="/"/>:<SignUp/>}/>
+
           
           <Route path="/dashboard" element={<Dashboard/>}/>
           

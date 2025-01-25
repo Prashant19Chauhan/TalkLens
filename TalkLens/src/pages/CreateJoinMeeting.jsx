@@ -1,19 +1,57 @@
 import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { createMeeting, joinMeeting } from '../redux/meetingSlice';
 
 const CreateJoinMeeting = () => {
+  const dispatch = useDispatch();
+  const {meeting} = useSelector(state => state.meeting);
+  const {currentUser} = useSelector(state => state.user);
+  const{name, uid} = currentUser;
   const [meetingId, setMeetingId] = useState('');
   const [meetingName, setMeetingName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
   // Handle form submission for creating or joining a meeting
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     if (isCreating && meetingName) {
       // Logic to create a new meeting
+      try{
+        const response = await fetch('/api/meeting/create', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({meetingName: meetingName, hostName: name, userId:uid }),
+        })
+        const data = await response.json()
+        dispatch(createMeeting({owner:true, data}));
+      }catch(err){
+        console.log(err);
+      }
       console.log(`Creating meeting with name: ${meetingName}`);
       // Redirect to the created meeting room or similar
     } else if (!isCreating && meetingId) {
       // Logic to join a meeting with the provided ID
+      try{
+        const response = await fetch('/api/meeting/join', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({roomId: meetingId, userId: uid}),
+        })
+        const data = await response.json()
+        if(meeting.data.roomId!=meetingId){
+          dispatch(joinMeeting({owner:false, data}))
+        }
+        else{
+          dispatch(joinMeeting({owner:true, data}))
+        }
+        
+      }catch(err){
+        console.log(err);
+      }
       console.log(`Joining meeting with ID: ${meetingId}`);
       // Redirect to the meeting room or similar
     } else {
