@@ -11,10 +11,10 @@ import CreateJoinMeeting from "./pages/CreateJoinMeeting"
 import FeaturesPage from "./pages/feature"
 import PricingPage from "./pages/PricingPage"
 import ContactPage from "./pages/ContactPage"
-
 import { useSelector } from "react-redux"
 
 function App() { 
+
   const { currentUser } = useSelector(state=> state.user);
 
   return (
@@ -23,7 +23,7 @@ function App() {
         <Header/>
         <Routes>
           <Route path="/landing" element={<LandingPage/>}/>
-          <Route path="/meeting" element={<MeetingRoom roomId={"p1s3d4ccc44b333"}/>}/>
+          <Route path="/meeting/:meetingId" element={<MeetingRoom roomId={"p1s3d4ccc44b333"}/>}/>
           <Route path="/" element={currentUser? <CreateJoinMeeting/> : <Navigate to="/landing"/>}/>
           <Route path="/features" element={<FeaturesPage/>}/>
           <Route path="/Pricing" element={<PricingPage/>}/>

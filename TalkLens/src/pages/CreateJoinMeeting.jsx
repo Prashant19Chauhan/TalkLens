@@ -1,19 +1,23 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createMeeting, joinMeeting } from '../redux/meetingSlice';
+import { useSelector } from 'react-redux';
+import { socket } from '../context/socketProvider';
+import {useNavigate} from 'react-router-dom'
 
 const CreateJoinMeeting = () => {
-  const dispatch = useDispatch();
-  const {meeting} = useSelector(state => state.meeting);
+
   const {currentUser} = useSelector(state => state.user);
   const{name, uid} = currentUser;
   const [meetingId, setMeetingId] = useState('');
   const [meetingName, setMeetingName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   // Handle form submission for creating or joining a meeting
   const handleSubmit = async(e) => {
     e.preventDefault();
+    setIsLoading(true);
     if (isCreating && meetingName) {
       // Logic to create a new meeting
       try{
@@ -25,9 +29,27 @@ const CreateJoinMeeting = () => {
           body: JSON.stringify({meetingName: meetingName, hostName: name, userId:uid }),
         })
         const data = await response.json()
-        dispatch(createMeeting({owner:true, data}));
+        console.log(data)
+        const meetingId = data.roomId
+        if(data.success){
+          try{
+            socket.timeout(5000).emit('room-join', {uid, meetingId}, (err, response) => {
+              setIsLoading(false);
+              if(err){
+                console.log("error")
+              }
+              else if(response){
+                navigate(`/meeting/${meetingId}`)
+              }
+            });
+          }
+          catch(err){
+            console.log(err)
+          }
+        }
       }catch(err){
         console.log(err);
+        setIsLoading(false)
       }
       console.log(`Creating meeting with name: ${meetingName}`);
       // Redirect to the created meeting room or similar
@@ -42,15 +64,31 @@ const CreateJoinMeeting = () => {
           body: JSON.stringify({roomId: meetingId, userId: uid}),
         })
         const data = await response.json()
-        if(meeting.data.roomId!=meetingId){
-          dispatch(joinMeeting({owner:false, data}))
+
+        if(data.success){
+          try{
+            socket.timeout(5000).emit('room-join', {uid, meetingId}, (err, response) => {
+              setIsLoading(false);
+              if(err){
+                console.log("error")
+              }
+              else if(response){
+                navigate(`/meeting/${meetingId}`)
+              }
+            });
+          }
+          catch(err){
+            console.log(err)
+          }
         }
         else{
-          dispatch(joinMeeting({owner:true, data}))
+          console.log(data.message)
+          setIsLoading(false)
         }
         
       }catch(err){
         console.log(err);
+        setIsLoading(false)
       }
       console.log(`Joining meeting with ID: ${meetingId}`);
       // Redirect to the meeting room or similar
@@ -112,7 +150,7 @@ const CreateJoinMeeting = () => {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
           >
-            {isCreating ? 'Create Meeting' : 'Join Meeting'}
+            {isLoading ?<span>loading...</span> : (isCreating ? 'Create Meeting' : 'Join Meeting')}
           </button>
         </form>
       </div>
