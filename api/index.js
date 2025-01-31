@@ -55,6 +55,12 @@ io.on("connection", (socket) => {
     socket.to(meetingId).emit("user-joined", (uid));
     callback({ success: true });
   })
+
+  socket.on('user-call', ({to, offer}) => {
+    console.log(to, offer);
+    socket.to(to).emit('incoming-call', {from:socket.id, offer });
+
+  })
 })
 
 
