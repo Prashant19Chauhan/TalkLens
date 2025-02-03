@@ -9,6 +9,10 @@ const meetingSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
+    ownerId:{
+        type:String,
+        required:true,
+    },
     participants:{
         type:[String],
     }

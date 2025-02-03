@@ -1,75 +1,40 @@
-import Socketpage from "../meetingSocket/socket";
-import { useParams } from "react-router-dom";
+import { useRef, useEffect } from "react";
 import { socket } from "../context/socketProvider";
-import { useEffect, useRef, useState } from "react";
-import { createPeer } from "../service/peer";
 
-function MeetingRoom() {
-  const [remoteSocketId, setRemoteSocketId] = useState(null);
-  const [from, setFrom] = useState(null);
-  const [myStream, setMyStream] = useState(null);
-  const { meetingId } = useParams();
+function MeetingRoom({ myStream }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
-    // Listen for user joining
+    if (myStream && videoRef.current) {
+      videoRef.current.srcObject = myStream;
+    }
+  }, [myStream]);
+
+  useEffect(() => {
+    // Listen for new user joining the meeting
     socket.on("user-joined", (uid) => {
-      setRemoteSocketId(uid);
+      console.log(`User joined: ${uid}`);
     });
 
-    // Listen for incoming call
     socket.on("incoming-call", ({ from, offer }) => {
-      setFrom(from);
-      console.log("Incoming call from:", from);
-      console.log("Offer:", offer);
+      console.log(`Incoming call from: ${from}`);
+      console.log(`Offer: ${offer}`);
     });
 
-    // Clean up the event listeners on component unmount
     return () => {
-      socket.off("user-joined");
+      socket.off("user-joined"); // Cleanup listener on unmount
       socket.off("incoming-call");
     };
   }, []);
 
-  const media = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
-      });
-
-      // Set the stream to state and bind it to the video element
-      setMyStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream; // Bind MediaStream to the video element
-      }
-
-      const peer = createPeer(socket);
-      const offer = await peer.makeCall();
-
-      socket.timeout(5000).emit("user-call", { to: remoteSocketId, offer });
-    } catch (error) {
-      console.error("Error accessing media devices:", error);
-    }
-  };
-
   return (
     <div>
-      <h1>Meeting ID: {meetingId}</h1>
-      <Socketpage />
-      <div>
-        <button onClick={media}>Start Media</button>
-        <h1>My Stream</h1>
-        {myStream && (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            style={{ width: "300px", height: "300px", backgroundColor: "black" }}
-          />
-        )}
-      </div>
+      <h1>Meeting Room</h1>
+      {myStream ? (
+        <video ref={videoRef} autoPlay playsInline muted style={{ width: "300px", height: "300px", backgroundColor: "black" }} />
+      ) : (
+        <p>Waiting for stream...</p>
+      )}
     </div>
   );
 }

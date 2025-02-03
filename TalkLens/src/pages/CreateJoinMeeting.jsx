@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { socket } from '../context/socketProvider';
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 
-const CreateJoinMeeting = () => {
+const CreateJoinMeeting = ({setOwnerId1}) => {
 
   const {currentUser} = useSelector(state => state.user);
   const{name, uid} = currentUser;
@@ -11,7 +10,6 @@ const CreateJoinMeeting = () => {
   const [meetingName, setMeetingName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const navigate = useNavigate();
 
   // Handle form submission for creating or joining a meeting
@@ -29,24 +27,14 @@ const CreateJoinMeeting = () => {
           body: JSON.stringify({meetingName: meetingName, hostName: name, userId:uid }),
         })
         const data = await response.json()
-        console.log(data)
-        const meetingId = data.roomId
-        if(data.success){
-          try{
-            socket.timeout(5000).emit('room-join', {uid, meetingId}, (err, response) => {
-              setIsLoading(false);
-              if(err){
-                console.log("error")
-              }
-              else if(response){
-                navigate(`/meeting/${meetingId}`)
-              }
-            });
-          }
-          catch(err){
-            console.log(err)
-          }
+
+        if(data.success==true){
+          const meetingId = data.roomId;
+          setOwnerId1(data.ownerId);
+          navigate(`/joinRoom/${meetingId}`)
+          setIsLoading(false);
         }
+
       }catch(err){
         console.log(err);
         setIsLoading(false)
@@ -64,26 +52,10 @@ const CreateJoinMeeting = () => {
           body: JSON.stringify({roomId: meetingId, userId: uid}),
         })
         const data = await response.json()
-
-        if(data.success){
-          try{
-            socket.timeout(5000).emit('room-join', {uid, meetingId}, (err, response) => {
-              setIsLoading(false);
-              if(err){
-                console.log("error")
-              }
-              else if(response){
-                navigate(`/meeting/${meetingId}`)
-              }
-            });
-          }
-          catch(err){
-            console.log(err)
-          }
-        }
-        else{
-          console.log(data.message)
-          setIsLoading(false)
+        if(data.success==true){
+          const meetingId = data.roomId;
+          navigate(`/joinRoom/${meetingId}`)
+          setIsLoading(false);
         }
         
       }catch(err){

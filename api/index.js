@@ -50,7 +50,7 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   socket.on("room-join", (data, callback) => {
-    const {uid, meetingId} = data;
+    const {uid, meetingId, myStream} = data;
     socket.join(meetingId);
     socket.to(meetingId).emit("user-joined", (uid));
     callback({ success: true });

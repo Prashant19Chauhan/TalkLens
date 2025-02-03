@@ -8,10 +8,11 @@ export const createMeeting = async (req, res, next) => {
         const newMeeting = new Meeting({
             hostName,
             meetingName,
+            ownerId:userId,
             participants: [userId],
         });
         await newMeeting.save();
-        return res.status(200).json({ roomId: newMeeting._id, hostName, meetingName, success:true });
+        return res.status(200).json({ roomId: newMeeting._id, hostName, meetingName, ownerId:userId, success:true });
     } catch (error) {
         return next(errorHandler(400, "Can't create meeting. Try again."));
     }
