@@ -70,6 +70,14 @@ io.on("connection", (socket) => {
   socket.on('user-call', ({to, offer}) => {
     socket.to(to).emit('incoming-call', {from:socket.id, offer });
   })
+
+  socket.on('call-answer', ({to, answer}) => {
+    socket.to(to).emit('answer', {from:socket.id, answer, success:true});
+  })
+
+  socket.on('ice-candidate', ({ to, candidate }) => {
+    socket.to(to).emit('ice-candidate', { from: socket.id, candidate });
+  });
 })
 
 

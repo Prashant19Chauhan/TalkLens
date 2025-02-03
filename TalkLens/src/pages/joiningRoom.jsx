@@ -3,10 +3,12 @@ import { socket } from "../context/socketProvider";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+
 function joiningRoom({setMyStream1}) {
   const videoRef = useRef(null);
   const [myStream, setMyStream] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [peerConnection, setPeerConnection] = useState(null);
   const navigate = useNavigate();
   const { meetingId } = useParams();
   const { currentUser } = useSelector(state=> state.user);
@@ -27,8 +29,30 @@ function joiningRoom({setMyStream1}) {
       setMyStream1(stream);
       if (videoRef.current) {
         videoRef.current.srcObject = stream; // Bind MediaStream to the video element
-        console.log("true")
       }
+
+      const pc = new RTCPeerConnection({
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" },
+        ],
+      });
+
+      setPeerConnection(pc);
+
+      // Add local stream to peer connection
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit("ice-candidate", {
+            candidate: event.candidate,
+            to: meetingId,
+          });
+        }
+      };
+
+
     }catch(err){
       console.log(err)
     }
@@ -54,29 +78,43 @@ function joiningRoom({setMyStream1}) {
     }
   }
 
-  const joinMeeting = () => {
+  const joinMeeting = async () => {
     const uid = currentUser.uid;
-    socket.timeout(5000).emit("room-join", {meetingId,uid}, (err, response)=>{
-      if(err){
-        console.log(err);
+    socket.timeout(5000).emit("room-join", { meetingId, uid }, async (err, response) => {
+      if (err) {
+        console.log("Room join error:", err);
         setIsLoading(false);
-      }
-      else if(response){
-        if(response.success==true){
-          if(response.ownerId==uid){
-            setIsLoading(false);
-            navigate(`/room/${meetingId}`)
-          } 
-          else{
-            const to= meetingId
-            const offer = "hii"
-            socket.emit("user-call", {to, offer})
+      } else if (response?.success) {
+        if (response.ownerId === uid) {
+          setIsLoading(false);
+          navigate(`/room/${meetingId}`);
+        } else {
+          try {
+            if (!peerConnection) {
+              console.error("PeerConnection is not initialized");
+              return;
+            }
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            socket.emit("user-call", { to: meetingId, offer });
+
+            socket.on("answer", async ({ from, answer, success }) => {
+              if(success==true){
+                navigate(`/room/${meetingId}`);
+              }
+            });
+
             setIsLoading(true);
+          } catch (err) {
+            console.error("Error during joinMeeting:", err);
+            setIsLoading(false);
           }
         }
       }
-    })
-  }
+    });
+  };
 
   return (
     <div>
