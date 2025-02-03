@@ -3,7 +3,7 @@ import { socket } from "../context/socketProvider";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-function joiningRoom({setMyStream1, ownerId1}) {
+function joiningRoom({setMyStream1}) {
   const videoRef = useRef(null);
   const [myStream, setMyStream] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,37 +56,26 @@ function joiningRoom({setMyStream1, ownerId1}) {
 
   const joinMeeting = () => {
     const uid = currentUser.uid;
-    console.log(ownerId1)
-    console.log(uid)
-    const owner = ownerId1;
-    if(owner === uid){
-      socket.timeout(5000).emit("room-join", {meetingId,uid}, (err, response)=>{
-        if(err){
-          console.log(err);
-          setIsLoading(false);
-        }
-        else if(response){
-          if(response.success==true){
+    socket.timeout(5000).emit("room-join", {meetingId,uid}, (err, response)=>{
+      if(err){
+        console.log(err);
+        setIsLoading(false);
+      }
+      else if(response){
+        if(response.success==true){
+          if(response.ownerId==uid){
+            setIsLoading(false);
             navigate(`/room/${meetingId}`)
-            setIsLoading(false);
+          } 
+          else{
+            const to= meetingId
+            const offer = "hii"
+            socket.emit("user-call", {to, offer})
+            setIsLoading(true);
           }
         }
-      })
-    }
-    else{
-      socket.timeout(5000).emit("room-join", {meetingId,uid}, (err, response)=>{
-        if(err){
-          console.log(err);
-          setIsLoading(false);
-        }
-        else if(response){
-          if(response.success==true){
-            navigate(`/waiting-room/${meetingId}`)
-            setIsLoading(false);
-          }
-        }
-      })
-    }
+      }
+    })
   }
 
   return (

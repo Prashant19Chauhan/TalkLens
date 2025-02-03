@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-const CreateJoinMeeting = ({setOwnerId1}) => {
+const CreateJoinMeeting = () => {
 
   const {currentUser} = useSelector(state => state.user);
   const{name, uid} = currentUser;
@@ -30,7 +30,6 @@ const CreateJoinMeeting = ({setOwnerId1}) => {
 
         if(data.success==true){
           const meetingId = data.roomId;
-          setOwnerId1(data.ownerId);
           navigate(`/joinRoom/${meetingId}`)
           setIsLoading(false);
         }

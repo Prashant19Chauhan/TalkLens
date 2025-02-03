@@ -13,12 +13,10 @@ import ContactPage from "./pages/ContactPage"
 import JoiningRoom from "./pages/joiningRoom"
 import { useSelector } from "react-redux"
 import MeetingRoom from "./pages/MeetingRoom"
-import WaitRoom from "./pages/waitRoom"
 import { useState } from "react"
 
 function App() { 
   const [myStream, setMyStream1] = useState(null);
-  const [ownerId1, setOwnerId1] = useState(null);
   const { currentUser } = useSelector(state=> state.user);
 
   return (
@@ -27,7 +25,7 @@ function App() {
         <Header/>
         <Routes>
           <Route path="/landing" element={<LandingPage/>}/>
-          <Route path="/" element={currentUser? <CreateJoinMeeting setOwnerId1={setOwnerId1}/> : <Navigate to="/landing"/>}/>
+          <Route path="/" element={currentUser? <CreateJoinMeeting/> : <Navigate to="/landing"/>}/>
           <Route path="/features" element={<FeaturesPage/>}/>
           <Route path="/Pricing" element={<PricingPage/>}/>
           <Route path="/contact" element={<ContactPage/>}/>
@@ -35,8 +33,7 @@ function App() {
           
           <Route path="/login" element={currentUser?<Navigate to="/"/>:<SignIn />}/>
           <Route path="/register" element={currentUser?<Navigate to="/"/>:<SignUp/>}/>
-          <Route path="/joinroom/:meetingId" element={<JoiningRoom setMyStream1={setMyStream1} ownerId1={ownerId1}/>}/>
-          <Route path="/waiting-room/:meetingId" element={<WaitRoom/>}/>
+          <Route path="/joinroom/:meetingId" element={<JoiningRoom setMyStream1={setMyStream1}/>}/>
           <Route path="/room/:meetingId" element={<MeetingRoom myStream={myStream}/>}/>
           
           <Route path="/dashboard" element={<Dashboard/>}/>

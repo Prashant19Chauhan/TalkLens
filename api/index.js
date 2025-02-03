@@ -12,6 +12,8 @@ import userRoute from './routes/user.routes.js';
 import authRoute from './routes/auth.routes.js';
 import meetingRoute from './routes/meetingRoutes.js';
 
+import Meeting from './models/Meeting.js';
+
 const app = express();
 const server = http.createServer(app);
 
@@ -49,17 +51,24 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  socket.on("room-join", (data, callback) => {
+  socket.on("room-join", async(data, callback) => {
     const {uid, meetingId, myStream} = data;
-    socket.join(meetingId);
-    socket.to(meetingId).emit("user-joined", (uid));
-    callback({ success: true });
+    const roomId = meetingId;
+    const meeting = await Meeting.findById(roomId);
+    if(meeting){
+      const ownerId = meeting.ownerId
+      socket.join(meetingId);
+      socket.to(meetingId).emit("user-joined", (uid));
+      return callback({ success: true , ownerId});
+    }
+    else{
+      return callback({ success: false , message: "owner not found"});
+    }
+    
   })
 
   socket.on('user-call', ({to, offer}) => {
-    console.log(to, offer);
     socket.to(to).emit('incoming-call', {from:socket.id, offer });
-
   })
 })
 
