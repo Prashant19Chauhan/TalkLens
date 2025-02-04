@@ -2,37 +2,37 @@ import { useRef, useEffect, useState } from "react";
 import { socket } from "../context/socketProvider";
 
 function MeetingRoom({ myStream }) {
-  const [offerdetails, setOfferDetails] = useState({})
-  const [peerConnection, setPeerConnection] = useState(null);
-  const [remoteStream1, setRemoteStream] = useState(null)
+  const [peerConnections, setPeerConnections] = useState({}); // Store all user peer connections
+  const [remoteStreams, setRemoteStreams] = useState([]); // Store all remote user streams
   const videoRef = useRef(null);
-  const remoteVideoRef = useRef(null);
 
   useEffect(() => {
-    if (myStream && videoRef.current) {
+    if (videoRef.current) {
       videoRef.current.srcObject = myStream;
     }
-  }, [myStream]);
 
-  useEffect(() => {
-    // Listen for new user joining the meeting
-    socket.on("user-joined", (uid) => {
-      console.log(`User joined: ${uid}`);
-    });
-
+    // Handle incoming calls from multiple users
     socket.on("incoming-call", ({ from, offer }) => {
       console.log(`Incoming call from: ${from}`);
-      console.log(`Offer: ${offer}`);
-      setOfferDetails({from,offer})
+      handleIncomingOffer(from, offer);
+    });
+
+    // Handle new ICE candidates for multiple users
+    socket.on("ice-candidate", ({ from, candidate }) => {
+      if (peerConnections[from]) {
+        peerConnections[from].addIceCandidate(new RTCIceCandidate(candidate));
+      }
     });
 
     return () => {
-      socket.off("user-joined"); // Cleanup listener on unmount
       socket.off("incoming-call");
+      socket.off("ice-candidate");
     };
   }, []);
 
   const handleIncomingOffer = async (from, offer) => {
+    console.log(`Handling offer from ${from}`);
+    
     try {
       const pc = new RTCPeerConnection({
         iceServers: [
@@ -41,66 +41,54 @@ function MeetingRoom({ myStream }) {
         ],
       });
 
-      setPeerConnection(pc);
+      // Save peer connection for this user
+      setPeerConnections(prev => ({ ...prev, [from]: pc }));
 
-      // Add local stream to peer connection
-      myStream.getTracks().forEach((track) => pc.addTrack(track, myStream));
+      // Attach local stream (your own media) to peer connection
+      myStream.getTracks().forEach(track => pc.addTrack(track, myStream));
 
-      // Handle incoming remote streams
+      // Handle receiving remote tracks
       pc.ontrack = (event) => {
-        const [remoteStream] = event.streams;
-        setRemoteStream(remoteStream);
-        console.log(remoteStream1)
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = remoteStream;
-        }
+        console.log("Received remote track from", from);
+        setRemoteStreams(prev => [...prev, { id: from, stream: event.streams[0] }]);
       };
 
       // Handle ICE candidates
       pc.onicecandidate = (event) => {
         if (event.candidate) {
-          socket.emit("ice-candidate", {
-            candidate: event.candidate,
-            meetingId: offerdetails.meetingId,
-          });
+          console.log(`Sending ICE candidate to ${from}`);
+          socket.emit("ice-candidate", { to: from, candidate: event.candidate });
         }
       };
 
-      // Set the remote description (the offer)
-      await pc.setRemoteDescription(offer);
+      // Set the remote offer description
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
-      // Create an answer to send back
+      // Create and send an answer
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-
-      // Send answer to the caller
       socket.emit("call-answer", { to: from, answer });
+
     } catch (err) {
-      console.error("Error handling incoming offer:", err);
+      console.error("❌ Error handling incoming offer:", err);
     }
   };
-
-  const admit = () => {
-    const from = offerdetails.from
-    const offer = offerdetails.offer
-    handleIncomingOffer(from, offer);
-  }
-
 
   return (
     <div>
       <h1>Meeting Room</h1>
-      {myStream ? (
-        <div>
-          <h1>my</h1>
-          <video ref={videoRef} autoPlay playsInline muted style={{ width: "300px", height: "300px", backgroundColor: "black" }} />
-          <h1>yours</h1>
-          <video ref={remoteVideoRef} autoPlay playsInline muted style={{ width: "300px", height: "300px", backgroundColor: "black" }} />
-        </div>
-      ) : (
-        <p>Waiting for stream...</p>
-      )}
-      <button onClick={admit}>answer</button>
+      <h2>My Stream</h2>
+      <video ref={videoRef} autoPlay playsInline muted style={{ width: "300px", height: "300px", backgroundColor: "black" }} />
+
+      <h2>Connected Users</h2>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+        {remoteStreams.map(({ id, stream }) => (
+          <div key={id}>
+            <h4>User: {id}</h4>
+            <video autoPlay playsInline ref={(video) => video && (video.srcObject = stream)} style={{ width: "200px", height: "200px", backgroundColor: "black" }} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

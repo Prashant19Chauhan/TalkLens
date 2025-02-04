@@ -51,34 +51,32 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  socket.on("room-join", async(data, callback) => {
-    const {uid, meetingId, myStream} = data;
+  socket.on("room-join", async (data, callback) => {
+    const { uid, meetingId } = data;
     const roomId = meetingId;
     const meeting = await Meeting.findById(roomId);
-    if(meeting){
-      const ownerId = meeting.ownerId
+
+    if (meeting) {
       socket.join(meetingId);
-      socket.to(meetingId).emit("user-joined", (uid));
-      return callback({ success: true , ownerId});
+      socket.to(meetingId).emit("user-joined", uid);
+      return callback({ success: true, ownerId: meeting.ownerId });
+    } else {
+      return callback({ success: false, message: "Meeting not found" });
     }
-    else{
-      return callback({ success: false , message: "owner not found"});
-    }
-    
-  })
-
-  socket.on('user-call', ({to, offer}) => {
-    socket.to(to).emit('incoming-call', {from:socket.id, offer });
-  })
-
-  socket.on('call-answer', ({to, answer}) => {
-    socket.to(to).emit('answer', {from:socket.id, answer, success:true});
-  })
-
-  socket.on('ice-candidate', ({ to, candidate }) => {
-    socket.to(to).emit('ice-candidate', { from: socket.id, candidate });
   });
-})
+
+  socket.on("user-call", ({ to, offer }) => {
+    socket.to(to).emit("incoming-call", { from: socket.id, offer });
+  });
+
+  socket.on("call-answer", ({ to, answer }) => {
+    socket.to(to).emit("answer", { from: socket.id, answer, success: true });
+  });
+
+  socket.on("ice-candidate", ({ to, candidate }) => {
+    socket.to(to).emit("ice-candidate", { from: socket.id, candidate });
+  });
+});
 
 
 // Start server
