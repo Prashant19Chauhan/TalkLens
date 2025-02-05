@@ -14,6 +14,7 @@ import JoiningRoom from "./pages/joiningRoom"
 import { useSelector } from "react-redux"
 import MeetingRoom from "./pages/MeetingRoom"
 import { useState } from "react"
+import SingleUserCall from './pages/singleUserCall'
 
 function App() { 
   const [myStream, setMyStream1] = useState(null);
@@ -35,7 +36,7 @@ function App() {
           <Route path="/register" element={currentUser?<Navigate to="/"/>:<SignUp/>}/>
           <Route path="/joinroom/:meetingId" element={<JoiningRoom setMyStream1={setMyStream1}/>}/>
           <Route path="/room/:meetingId" element={<MeetingRoom myStream={myStream}/>}/>
-          
+          <Route path="/single" element={<SingleUserCall/>}/>
           <Route path="/dashboard" element={<Dashboard/>}/>
           
           
