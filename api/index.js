@@ -76,6 +76,12 @@ io.on("connection", (socket) => {
   socket.on("ice-candidate", ({ to, candidate }) => {
     socket.to(to).emit("ice-candidate", { from: socket.id, candidate });
   });
+
+  // Handle user disconnect
+  socket.on("disconnect", () => {
+    console.log(`User ${socket.id} disconnected`);
+    io.emit("user-left", { id: socket.id });
+  });
 });
 
 
