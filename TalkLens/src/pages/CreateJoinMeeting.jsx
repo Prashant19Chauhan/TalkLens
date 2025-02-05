@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { socket } from '../context/socketProvider';
 
 const CreateJoinMeeting = () => {
+
+  useEffect(()=>{
+    socket.on("connection-successful", ({socketId}) => {
+      console.log(socketId)
+    })
+  })
 
   const {currentUser} = useSelector(state => state.user);
   const{name, uid} = currentUser;
@@ -10,7 +16,6 @@ const CreateJoinMeeting = () => {
   const [meetingName, setMeetingName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   // Handle form submission for creating or joining a meeting
   const handleSubmit = async(e) => {
@@ -30,7 +35,7 @@ const CreateJoinMeeting = () => {
 
         if(data.success==true){
           const meetingId = data.roomId;
-          navigate(`/joinRoom/${meetingId}`)
+          console.log(meetingId)
           setIsLoading(false);
         }
 
@@ -53,7 +58,7 @@ const CreateJoinMeeting = () => {
         const data = await response.json()
         if(data.success==true){
           const meetingId = data.roomId;
-          navigate(`/joinRoom/${meetingId}`)
+          console.log(meetingId)
           setIsLoading(false);
         }
         
