@@ -1,14 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { socket } from '../context/socketProvider';
 
 const CreateJoinMeeting = () => {
-
-  useEffect(()=>{
-    socket.on("connection-successful", ({socketId}) => {
-      console.log(socketId)
-    })
-  })
 
   const {currentUser} = useSelector(state => state.user);
   const{name, uid} = currentUser;
