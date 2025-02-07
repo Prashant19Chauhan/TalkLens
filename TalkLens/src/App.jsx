@@ -10,6 +10,7 @@ import CreateJoinMeeting from "./pages/CreateJoinMeeting"
 import FeaturesPage from "./pages/feature"
 import PricingPage from "./pages/PricingPage"
 import ContactPage from "./pages/ContactPage"
+import SingleUserCall from "./pages/singleUserCall"
 import { useSelector } from "react-redux"
 
 function App() { 
@@ -30,6 +31,8 @@ function App() {
           <Route path="/login" element={currentUser?<Navigate to="/"/>:<SignIn />}/>
           <Route path="/register" element={currentUser?<Navigate to="/"/>:<SignUp/>}/>
           <Route path="/dashboard" element={<Dashboard/>}/>
+
+          <Route path="/call" element={<SingleUserCall/>}/>
           
           
         </Routes>

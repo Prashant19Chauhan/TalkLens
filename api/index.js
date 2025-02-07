@@ -52,3 +52,26 @@ const io = new Server(server, {
 server.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+
+io.on('connection', (socket) => {
+  console.log('my socket id:', socket.id)
+
+  socket.on('initiateCall', ({ userId, signalData, myId }) => {
+    io.to(userId).emit('incomingCall', { signalData, from: myId});
+  });
+
+  socket.on('answerCall', (data) => {
+    console.log(data.signal);
+    io.to(data.to).emit('callAccepted', data.signal);
+  });
+
+  socket.on('endCall', ({ to }) => {
+    io.to(to).emit('callEnded');
+  });
+
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
