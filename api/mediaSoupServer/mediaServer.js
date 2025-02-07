@@ -1,1 +1,0 @@
-import mediasoup from 'mediasoup';
