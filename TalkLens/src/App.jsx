@@ -11,10 +11,16 @@ import FeaturesPage from "./pages/feature"
 import PricingPage from "./pages/PricingPage"
 import ContactPage from "./pages/ContactPage"
 import SingleUserCall from "./pages/singleUserCall"
+import JoinRoom from "./pages/joinRoom"
+import Room from "./pages/room"
 import { useSelector } from "react-redux"
+import { useState } from "react"
 
 function App() { 
   const { currentUser } = useSelector(state=> state.user);
+  const [stream1, setStream1] = useState(null);
+  const [ownerId, setOwnerId] = useState(null);
+  const [ownerStream, setOwnerStream] = useState(null);
 
   return (
     <div className="text-red-300">
@@ -22,7 +28,7 @@ function App() {
         <Header/>
         <Routes>
           <Route path="/landing" element={<LandingPage/>}/>
-          <Route path="/" element={currentUser? <CreateJoinMeeting/> : <Navigate to="/landing"/>}/>
+          <Route path="/" element={currentUser? <CreateJoinMeeting setOwnerId={setOwnerId}/> : <Navigate to="/landing"/>}/>
           <Route path="/features" element={<FeaturesPage/>}/>
           <Route path="/Pricing" element={<PricingPage/>}/>
           <Route path="/contact" element={<ContactPage/>}/>
@@ -32,7 +38,9 @@ function App() {
           <Route path="/register" element={currentUser?<Navigate to="/"/>:<SignUp/>}/>
           <Route path="/dashboard" element={<Dashboard/>}/>
 
+          <Route path='/join-room/:meetingId' element={<JoinRoom setStream1={setStream1} ownerId={ownerId} setOwnerStream={setOwnerStream}/>}/>
           <Route path="/call" element={<SingleUserCall/>}/>
+          <Route path="/room/:meetingId" element={<Room stream1={stream1} ownerStream={ownerStream}/>}/>
           
           
         </Routes>

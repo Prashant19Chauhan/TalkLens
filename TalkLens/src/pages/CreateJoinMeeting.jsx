@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { socket } from "../socketProvider/socket";
 
-const CreateJoinMeeting = () => {
+const CreateJoinMeeting = ({setOwnerId}) => {
 
+  const socketId = socket.id;
   const {currentUser} = useSelector(state => state.user);
+  const navigate = useNavigate();
   const{name, uid} = currentUser;
   const [meetingId, setMeetingId] = useState('');
   const [meetingName, setMeetingName] = useState('');
@@ -22,13 +26,14 @@ const CreateJoinMeeting = () => {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({meetingName: meetingName, hostName: name, userId:uid }),
+          body: JSON.stringify({meetingName: meetingName, hostName: name, userId:uid, socketId: socketId }),
         })
         const data = await response.json()
 
         if(data.success==true){
           const meetingId = data.roomId;
-          console.log(meetingId)
+          setOwnerId(data.ownerId);
+          navigate(`/join-room/${meetingId}`)
           setIsLoading(false);
         }
 
@@ -51,7 +56,8 @@ const CreateJoinMeeting = () => {
         const data = await response.json()
         if(data.success==true){
           const meetingId = data.roomId;
-          console.log(meetingId)
+          setOwnerId(data.ownerId);
+          navigate(`/join-room/${meetingId}`)
           setIsLoading(false);
         }
         
@@ -68,6 +74,7 @@ const CreateJoinMeeting = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen flex justify-center items-center">
+      <section className='m-4'>My ID: <u><i>{socketId}</i></u></section>
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h1 className="text-2xl font-semibold text-center mb-6">Create or Join a Meeting</h1>
         

@@ -23,12 +23,17 @@ export const joinMeeting = async (req, res, next) => {
     const { roomId, userId } = req.body;
     try {
         const meeting = await Meeting.findById(roomId);
-        if (meeting) {
-            meeting.participants.push(userId);
-            await meeting.save();
-            return res.status(200).json({ success: true, roomId, userId });
+        const ownerId = meeting.ownerId;
+        const noParticipants = meeting.participants.length;
+        const isUserExist = Meeting.findOne({participants:userId});
+        if (meeting && noParticipants<=1){
+            if(!isUserExist){
+                meeting.participants.push(userId);
+                await meeting.save();
+            }
+            return res.status(200).json({ success: true, roomId, userId, ownerId });
         } else {
-            return next(errorHandler(404, "Room not found."));
+            return next(errorHandler(404, "Room is full."));
         }
     } catch (error) {
         return next(errorHandler(400, "Can't join meeting. Try again."));
