@@ -66,8 +66,12 @@ io.on('connection', (socket) => {
     io.to(data.to).emit('callAccepted', data.signal);
   });
 
-  socket.on('endCall', ({ to }) => {
-    io.to(to).emit('callEnded');
+  socket.on("sendMessage", (message) => {
+    io.emit("receiveMessage", message);
+  });
+
+  socket.on("endCall", ({ to }) => {
+    io.to(to).emit("callEnded");
   });
 
   // Handle disconnection

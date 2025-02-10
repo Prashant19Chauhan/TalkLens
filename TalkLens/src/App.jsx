@@ -13,6 +13,7 @@ import ContactPage from "./pages/ContactPage"
 import SingleUserCall from "./pages/singleUserCall"
 import JoinRoom from "./pages/joinRoom"
 import Room from "./pages/room"
+import EndCall from "./pages/endCall"
 import { useSelector } from "react-redux"
 import { useState } from "react"
 
@@ -41,6 +42,7 @@ function App() {
           <Route path='/join-room/:meetingId' element={<JoinRoom setStream1={setStream1} ownerId={ownerId} setOwnerStream={setOwnerStream}/>}/>
           <Route path="/call" element={<SingleUserCall/>}/>
           <Route path="/room/:meetingId" element={<Room stream1={stream1} ownerStream={ownerStream}/>}/>
+          <Route path="/room/end-call" element={<EndCall/>}/>
           
           
         </Routes>
