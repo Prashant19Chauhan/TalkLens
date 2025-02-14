@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { socket } from "../socketProvider/socket";
 import SimplePeer from "simple-peer";
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 
 function Room({ stream1, ownerStream }) {
-  const navigate = useNavigate();
-  
+    const navigate = useNavigate();
+    
     const myVideoRef = useRef();
     const peerVideoRef = useRef();
     const connectionRef = useRef();
@@ -15,6 +15,10 @@ function Room({ stream1, ownerStream }) {
     // Chat State
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
+    
+    // Toggle Video/Audio
+    const [isVideoOn, setIsVideoOn] = useState(true);
+    const [isAudioOn, setIsAudioOn] = useState(true);
 
     useEffect(() => {
         myVideoRef.current.srcObject = stream1;
@@ -91,7 +95,19 @@ function Room({ stream1, ownerStream }) {
         setIncomingCallInfo({});
         connectionRef.current = null;
         peerVideoRef.current.srcObject = null;
-        navigate('/room/end-call')
+        navigate('/room/end-call');
+    };
+
+    const toggleVideo = () => {
+        const videoTrack = stream1.getVideoTracks()[0];
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoOn(videoTrack.enabled);
+    };
+
+    const toggleAudio = () => {
+        const audioTrack = stream1.getAudioTracks()[0];
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsAudioOn(audioTrack.enabled);
     };
 
     return (
@@ -105,8 +121,13 @@ function Room({ stream1, ownerStream }) {
                 </div>
                 <div>
                     <h3 className="text-center">Peer Video</h3>
-                    <video ref={peerVideoRef} autoPlay playsInline muted className="video_player" />
+                    <video ref={peerVideoRef} autoPlay playsInline className="video_player" />
                 </div>
+            </div>
+
+            <div className="flex gap-4">
+                <button onClick={toggleVideo} className="input bg-gray">{isVideoOn ? 'Turn Video Off' : 'Turn Video On'}</button>
+                <button onClick={toggleAudio} className="input bg-gray">{isAudioOn ? 'Mute' : 'Unmute'}</button>
             </div>
 
             {isCallAccepted ? (
