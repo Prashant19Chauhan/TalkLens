@@ -1,11 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { socket } from "../socketProvider/socket";
 import { FaVideo } from 'react-icons/fa'; // React Icon for video calling
-import bg from '../assets/bg.jpg'; // Import background image
 
 const CreateJoinMeeting = ({ setOwnerId }) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slides = [
+    {
+      img: "bg4.jpg",
+      title: "Talklens is Best",
+      text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores recusandae.",
+    },
+    {
+      img: "bg5.jpg",
+      title: "Talklens is Best",
+      text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores recusandae.",
+    },
+    {
+      img: "bg6.jpg",
+      title: "Talklens is Best",
+      text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores recusandae.",
+    },
+    
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 3000); // Change slide every 3 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const socketId = socket.id;
   const { currentUser } = useSelector(state => state.user);
@@ -21,7 +46,6 @@ const CreateJoinMeeting = ({ setOwnerId }) => {
     e.preventDefault();
     setIsLoading(true);
     if (isCreating && meetingName) {
-      // Logic to create a new meeting
       try {
         const response = await fetch('/api/meeting/create', {
           method: "POST",
@@ -31,20 +55,14 @@ const CreateJoinMeeting = ({ setOwnerId }) => {
           body: JSON.stringify({ meetingName: meetingName, hostName: name, userId: uid, socketId: socketId }),
         });
         const data = await response.json();
-
         if (data.success === true) {
-          const meetingId = data.roomId;
           setOwnerId(data.ownerId);
-          navigate(`/join-room/${meetingId}`);
-          setIsLoading(false);
+          navigate(`/join-room/${data.roomId}`);
         }
-
       } catch (err) {
         console.log(err);
-        setIsLoading(false);
       }
     } else if (!isCreating && meetingId) {
-      // Logic to join a meeting with the provided ID
       try {
         const response = await fetch('/api/meeting/join', {
           method: "POST",
@@ -55,79 +73,66 @@ const CreateJoinMeeting = ({ setOwnerId }) => {
         });
         const data = await response.json();
         if (data.success === true) {
-          const meetingId = data.roomId;
           setOwnerId(data.ownerId);
-          navigate(`/join-room/${meetingId}`);
-          setIsLoading(false);
+          navigate(`/join-room/${data.roomId}`);
         }
-
       } catch (err) {
         console.log(err);
-        setIsLoading(false);
       }
     } else {
       alert('Please provide valid input');
     }
+    setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center relative">
-      {/* Background image with overlay */}
-      <div
-        className="absolute top-0 left-0 right-0 bottom-0 z-0"
-        style={{
-          backgroundImage: `url(${bg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.4, // Adjust opacity of the image to create overlay effect
-        }}
-      ></div>
+    <div className="h-[85vh] flex items-center justify-center relative">
+      {/* Left - Form Section */}
+      <div className="w-1/2 sm:w-1/2 bg-white p-15 relative z-10">
+        <h1 className="text-5xl font-bold text-teal-600 mb-3">
+          Video Calling and Meeting for everone
+        </h1>
+        <p className="text-gray-600 mb-6 text-2xl">Connect, collab and create connection from anywhere in the world</p>
+        <form onSubmit={handleSubmit}>
+          {/* Toggle between creating and joining a meeting */}
+          <div className="mb-4 flex gap-6">
+            <button
+              type="button"
+              onClick={() => setIsCreating(true)}
+              className={`px-6 py-3 rounded-md text-white ${isCreating ? 'bg-teal-600' : 'bg-teal-200'}`}
+            >
+              Create Meeting
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsCreating(false)}
+              className={`px-6 py-3 rounded-md text-white ${!isCreating ? 'bg-teal-600' : 'bg-teal-200'}`}
+            >
+              Join Meeting
+            </button>
+          </div>
 
-      <div className="w-full max-w-md z-10">
-        <div className="bg-white p-8 rounded-lg shadow-lg relative">
-          <h1 className="text-3xl font-semibold text-center text-gray-700 mb-6">
-            <FaVideo className="inline-block text-xl mr-2" /> Create or Join a Meeting
-          </h1>
-
-          <form onSubmit={handleSubmit}>
-            {/* Toggle between creating and joining a meeting */}
-            <div className="mb-4 flex justify-center gap-6">
-              <button
-                type="button"
-                onClick={() => setIsCreating(true)}
-                className={`px-6 py-3 rounded-md ${isCreating ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              >
-                Create Meeting
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCreating(false)}
-                className={`px-6 py-3 rounded-md ${!isCreating ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              >
-                Join Meeting
-              </button>
-            </div>
-
+          <div className="w-full flex items-center gap-4">
             {/* Conditional form based on whether creating or joining */}
             {isCreating ? (
-              <div className="mb-4">
+              <div className="mb-4 w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Meeting Name</label>
                 <input
                   type="text"
                   value={meetingName}
                   onChange={(e) => setMeetingName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-3 border-2 border-gray-300 rounded-md"
                   placeholder="Enter meeting name"
                 />
               </div>
             ) : (
-              <div className="mb-4">
+              <div className="mb-4 w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Meeting ID</label>
                 <input
                   type="text"
                   value={meetingId}
                   onChange={(e) => setMeetingId(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-3 border-2 border-gray-300 rounded-md"
                   placeholder="Enter meeting ID"
                 />
               </div>
@@ -135,15 +140,26 @@ const CreateJoinMeeting = ({ setOwnerId }) => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+              className="w-auto text-gray-400 rounded-md active:text-teal-700 transition py-2 px-4"
             >
-              {isLoading ? <span>Loading...</span> : (isCreating ? 'Create Meeting' : 'Join Meeting')}
+              {isLoading ? <span>Loading...</span> : (isCreating ? 'Create' : 'Join')}
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
-      <div className="w-1/2 z-10">
-        <h1 className="text-black text-6xl font-bold text-center ">Welcome to talklens - Feature of video Calling</h1>
+
+      {/* Right - Slider Section */}
+      <div className="w-1/2 flex items-center justify-center relative overflow-hidden h-[70vh]">
+        {slides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 flex flex-col items-center transition-all duration-700 ease-in-out ${index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
+          >
+            <img src={slide.img} alt="Slide" className="w-100 h-100 object-cover rounded-lg" />
+            <h1 className="text-2xl font-semibold text-teal-600 mt-4">{slide.title}</h1>
+            <p className="text-gray-600 text-center mt-2">{slide.text}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
