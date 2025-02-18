@@ -3,6 +3,7 @@ import SimplePeer from "simple-peer";
 import { socket } from "../socketProvider/socket";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import { FaVideo, FaVideoSlash, FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 
 function JoinRoom({ setStream1, ownerId, setOwnerStream }) {
   const [stream, setStream] = useState(null);
@@ -77,51 +78,48 @@ function JoinRoom({ setStream1, ownerId, setOwnerStream }) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-800 text-white">
-      <div className="bg-gray-900 rounded-lg shadow-lg p-8 w-full max-w-lg">
-        <section className="mb-6 text-center">
-          <p className="text-lg font-medium">My ID: <u><i>{socket?.id}</i></u></p>
-        </section>
-
-        <div className="text-center mb-6">
-          <h3 className="text-2xl font-semibold">My Video</h3>
-          <video ref={myVideoRef} autoPlay playsInline muted className="w-full h-64 rounded-lg shadow-lg mt-4" />
+    <div className="flex flex-col md:flex-row items-center justify-center h-[85vh] p-6 space-y-8 md:space-x-10">
+      {/* Left Section - Video & Controls */}
+      <div className="flex flex-col items-center bg-white p-6 rounded-lg w-full md:w-2/3">
+        <span className="text-black text-[10px]">{socket.id}</span>
+        <video ref={myVideoRef} autoPlay playsInline muted className="w-full h-115 bg-black rounded-4xl transform scale-x-[-1]" />
+        <div className="mt-4 flex gap-4 absolute bottom-22">
+          <button
+            onClick={toggleVideo}
+            className="flex items-center gap-2 px-4 py-4 text-2xl bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
+          >
+            {isVideoEnabled ? <FaVideo /> : <FaVideoSlash />}
+          </button>
+          <button
+            onClick={toggleAudio}
+            className="flex items-center gap-2 px-4 py-4 text-2xl bg-red-600 text-white rounded-full hover:bg-red-700 transition"
+          >
+            {isAudioEnabled ? <FaMicrophone /> : <FaMicrophoneSlash />}
+          </button>
         </div>
+      </div>
 
-        <div className="flex flex-col gap-4">
+      {/* Right Section - Join Meeting Form */}
+      <div className="flex flex-col items-center bg-white rounded-lg w-full md:w-1/3 text-center">
+        <h1 className="text-4xl font-[400] text-gray-700">Ready To Join?</h1>
+        <p className="text-gray-500 text-xl pt-2">User is waiting in the meeting</p>
+
+        <div className="w-full mt-4">
           <input
             type="text"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             placeholder="Enter User ID"
-            className="p-3 rounded-lg border border-gray-700 bg-gray-800 text-white focus:outline-none"
+            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={initiateCall}
-              className="p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition duration-200"
-            >
-              Call User
-            </button>
-
-            <button
-              onClick={toggleVideo}
-              className="p-3 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition duration-200"
-            >
-              {isVideoEnabled ? "Turn Video Off" : "Turn Video On"}
-            </button>
-          </div>
-
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={toggleAudio}
-              className="p-3 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition duration-200"
-            >
-              {isAudioEnabled ? "Mute Audio" : "Unmute Audio"}
-            </button>
-          </div>
         </div>
+
+        <button
+          onClick={initiateCall}
+          className="mt-4 px-23 py-4 font-semibold bg-green-600 text-white rounded-4xl hover:bg-green-700 transition"
+        >
+          Call User
+        </button>
       </div>
     </div>
   );

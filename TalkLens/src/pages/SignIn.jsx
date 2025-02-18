@@ -46,9 +46,9 @@ const SignIn = () => {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-[85vh]">
       {/* Left Div (SignIn Form) */}
-      <div className="w-full sm:w-1/2 bg-white p-8 rounded-lg shadow-lg flex justify-center items-center">
+      <div className="w-full sm:w-1/2 bg-white p-8 rounded-lg flex justify-center items-center">
         <div className="w-4/5"> {/* Adjusted for better centering on small screens */}
           <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">Sign In</h2>
 

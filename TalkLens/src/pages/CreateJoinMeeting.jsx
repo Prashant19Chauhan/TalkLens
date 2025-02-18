@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { socket } from "../socketProvider/socket";
-import { FaVideo } from 'react-icons/fa'; // React Icon for video calling
 
 const CreateJoinMeeting = ({ setOwnerId }) => {
   const [currentSlide, setCurrentSlide] = useState(0);

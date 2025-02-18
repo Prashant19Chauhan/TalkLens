@@ -39,7 +39,7 @@ const SignUp = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-teal-50">
+    <div className="h-[85vh] flex flex-col bg-teal-50">
       {/* SignUp Form */}
       <div className="flex w-full flex-grow bg-white">
         {/* Left Div (Image) */}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { socket } from "../socketProvider/socket";
 import SimplePeer from "simple-peer";
 import { useNavigate } from 'react-router-dom';
+import { FaVideo,FaClipboard, FaTimes, FaVideoSlash, FaMicrophone, FaMicrophoneSlash, FaClosedCaptioning, FaPhone, FaPaperPlane, FaComments, FaUsers } from "react-icons/fa";
 
 function Room({ stream1, ownerStream }) {
     const navigate = useNavigate();
@@ -19,6 +20,16 @@ function Room({ stream1, ownerStream }) {
     // Toggle Video/Audio
     const [isVideoOn, setIsVideoOn] = useState(true);
     const [isAudioOn, setIsAudioOn] = useState(true);
+
+    const [copied, setCopied] = useState(false);
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(socket.id)
+          .then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000); // Hide tooltip after 2 sec
+          })
+          .catch((err) => console.error("Error copying:", err));
+    };
 
     useEffect(() => {
         myVideoRef.current.srcObject = stream1;
@@ -111,55 +122,102 @@ function Room({ stream1, ownerStream }) {
     };
 
     return (
-        <div className="flex flex-col gap-4">
-            <section className="m-4">My ID: <u><i>{socket?.id}</i></u></section>
-            
-            <div className="flex gap-4">
-                <div>
-                    <h3 className="text-center">My Video</h3>
-                    <video ref={myVideoRef} autoPlay playsInline muted className="video_player" />
-                </div>
-                <div>
-                    <h3 className="text-center">Peer Video</h3>
-                    <video ref={peerVideoRef} autoPlay playsInline className="video_player" />
-                </div>
-            </div>
-
-            <div className="flex gap-4">
-                <button onClick={toggleVideo} className="input bg-gray">{isVideoOn ? 'Turn Video Off' : 'Turn Video On'}</button>
-                <button onClick={toggleAudio} className="input bg-gray">{isAudioOn ? 'Mute' : 'Unmute'}</button>
-            </div>
-
-            {isCallAccepted ? (
-                <button className="input bg-red" onClick={endCall}>End Call</button>
-            ) : (
-                incomingCallInfo?.isSomeoneCalling && (
-                    <div className="flex flex-col mb-8">
-                        <section className="m-4"><u>{incomingCallInfo?.from}</u> is calling</section>
-                        <button className="input bg-green" onClick={answerCall}>Answer Call</button>
+        <div className="p-6 w-full h-screen bg-[#1C1C1E]">
+            <div className="flex h-[64vh]">
+                <div className="flex w-3/4 h-full gap-5 p-5">
+                    <div className="w-1/2 h-full rounded-2xl">
+                        <video ref={myVideoRef} autoPlay playsInline muted className="w-full h-full bg-black rounded-4xl transform scale-x-[-1]"/>
+                        <h3 className="flex justify-center">My Video</h3>
                     </div>
-                )
-            )}
-
-            {/* Chat Box */}
-            <div className="border p-4 mt-4">
-                <h3 className="text-center mb-2">Chat</h3>
-                <div className="h-40 overflow-y-auto border p-2">
-                    {messages.map((msg, index) => (
-                        <p key={index} className={`p-2 rounded ${msg.sender === socket.id ? "bg-blue-200" : "bg-gray-200"}`}>
-                            <strong>{msg.sender === socket.id ? "Me" : msg.sender}:</strong> {msg.text}
-                        </p>
-                    ))}
+                    <div className="w-1/2">
+                        <video ref={peerVideoRef} autoPlay playsInline className="w-full h-full bg-black rounded-4xl transform scale-x-[-1]" />
+                        <h3 className="flex justify-center">Peer Video</h3>
+                    </div>
                 </div>
-                <div className="flex mt-2">
-                    <input
-                        type="text"
-                        className="flex-grow border p-2"
-                        placeholder="Type a message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                    />
-                    <button className="bg-blue-500 text-white p-2 ml-2" onClick={sendMessage}>Send</button>
+                <div className="w-1/4 text-gray-700">
+                    <div className="p-4 mt-4 h-[82vh] rounded-2xl bg-white">
+                        <h3 className="text-center mb-2 text-xl font-bold">Chat</h3>
+                        <div className="h-[65vh] overflow-y-auto p-2">
+                            {messages.map((msg, index) => (
+                                <p key={index} className={`p-2 rounded ${msg.sender === socket.id ? "" : ""}`}>
+                                    <strong>{msg.sender === socket.id ? "Me" : msg.sender}:</strong> {msg.text}
+                                </p>
+                            ))}
+                        </div>
+                        <div className="flex mt-2">
+                            <input
+                                type="text"
+                                className="flex-grow border-l border-t border-b p-2 rounded-bl-2xl rounded-tl-2xl placeholder:text-gray-500"
+                                placeholder="Type a message..."
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                            />
+                            <button className="border-r border-t border-b text-blcak p-2 rounded-br-2xl rounded-tr-2xl" onClick={sendMessage}><FaPaperPlane size={20} /></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="h-[20vh] w-3/4 pr-2">
+                <div className="w-full h-[50%] p-2 rounded-2xl justify-center">
+                    <p className="text-teal-400"><span className="font-bold">me: </span>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ipsum non architecto corporis, similique atque eum quibusdam deserunt dolor tenetur alias ut fugiat. Quae maiores, eius dolor tempore ullam adipisci beatae.</p>
+                    <p className="text-teal-200"><span className="font-bold">peer: </span>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ipsum non architecto corporis, similique atque eum quibusdam deserunt dolor tenetur alias ut fugiat. Quae maiores, eius dolor tempore ullam adipisci beatae.</p>
+                </div>
+            </div>
+            <div className="w-full flex justify-around items-center h-[11vh] p-5">
+                <div className="flex gap-2 w-1/4 text-white items-center">
+                    <button className="bg-gray-600 text-xl text-white p-2 rounded-full" onClick={copyToClipboard}><FaClipboard size={20} /></button>
+                    {/* Tooltip when copied */}
+                    {copied && (
+                        <span className="flex absolute bg-teal-300 p-3 pl-20 pr-20 bottom-[-70px] right-2 rounded-2xl">
+                            Copy to Clipboard!
+                        </span>
+                    )}
+                    <span>{socket.id}</span>
+                </div>
+                <div className="w-2/4 flex justify-center gap-4">
+                    <button
+                        onClick={toggleVideo}
+                        className="flex items-center gap-2 px-4 py-4 text-2xl bg-gray-600 text-white rounded-full transition"
+                    >
+                        {isVideoOn ? <FaVideo /> : <FaVideoSlash />}
+                    </button>
+                    <button
+                        onClick={toggleAudio}
+                        className="flex items-center gap-2 px-4 py-4 text-2xl bg-gray-600 text-white rounded-full transition"
+                    >
+                        {isAudioOn ? <FaMicrophone /> : <FaMicrophoneSlash />}
+                    </button>
+                    <button className="p-2 rounded-full px-5 py-4 bg-gray-600 text-white">
+                        <FaClosedCaptioning size={20} />
+                    </button>
+                    <button className="p-2 bg-red-600 px-10 py-4 text-white rounded-full hover:bg-red-700 transition" onClick={endCall}>
+                        <FaPhone size={20} />
+                    </button>
+                </div>
+                <div className="w-1/4 flex justify-end gap-2">
+                    <button className="p-2 rounded-full px-3 py-3 bg-gray-600 text-white"><FaComments size={20} /></button>
+                    <button className="p-2 rounded-full px-3 py-3 bg-gray-600 text-white"><FaUsers size={20} /></button>
+                    <div className="fixed right-5 bottom-5 bg-teal-100 rounded-xl">
+                        {isCallAccepted ? (
+                            <></>
+                        ) : (
+                            incomingCallInfo?.isSomeoneCalling && (
+                                <div className="flex flex-col p-5">
+                                    <div className="flex pb-5 justify-between">
+                                        <h2 className="text-xl font-semibold text-black">User Request</h2>
+                                        <button className="text-red-500" 
+                                            onClick={()=>{
+                                                setIncomingCallInfo(null)
+                                            }}>
+                                                <FaTimes size={20} />
+                                        </button>
+                                    </div>
+                                    <section className="text-gray-800 font-bold"><u>{incomingCallInfo?.from}</u> is calling</section>
+                                    <button className="bg-teal-400 text-white mt-4 p-3 rounded-2xl" onClick={answerCall}>Accept</button>
+                                </div>
+                            )
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
