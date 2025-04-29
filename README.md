@@ -77,10 +77,6 @@ We welcome contributions to TalkLens! Here’s how you can help:
 2. Make your changes or improvements.
 3. Open a pull request describing your changes.
 
-## License
-
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
-
 ## Contact
 
 **Developer**: Prashant Chauhan  
