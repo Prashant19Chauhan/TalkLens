@@ -64,10 +64,10 @@
 ## Screenshots
 
 1. **Home Page / Create a Room**  
-   ![Home Page](Add your screenshot here)
+   ![Home Page](t.PNG)
 
 2. **Join Room**  
-   ![Join Room](Add your screenshot here)
+   ![Join Room](tt.PNG)
 
 ## Contributing
 
