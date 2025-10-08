@@ -159,8 +159,8 @@ function Room({ stream1, ownerStream }) {
             </div>
             <div className="h-[20vh] w-3/4 pr-2">
                 <div className="w-full h-[50%] p-2 rounded-2xl justify-center">
-                    <p className="text-teal-400"><span className="font-bold">me: </span>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ipsum non architecto corporis, similique atque eum quibusdam deserunt dolor tenetur alias ut fugiat. Quae maiores, eius dolor tempore ullam adipisci beatae.</p>
-                    <p className="text-teal-200"><span className="font-bold">peer: </span>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ipsum non architecto corporis, similique atque eum quibusdam deserunt dolor tenetur alias ut fugiat. Quae maiores, eius dolor tempore ullam adipisci beatae.</p>
+                    <p className="text-teal-400"><span className="font-bold">me: </span>Hello how are you</p>
+                    <p className="text-teal-200"><span className="font-bold">peer: </span>What are you doing.</p>
                 </div>
             </div>
             <div className="w-full flex justify-around items-center h-[11vh] p-5">

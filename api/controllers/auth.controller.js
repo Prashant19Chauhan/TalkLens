@@ -8,6 +8,7 @@ export const register = async (req, res, next) => {
     return next(errorHandler(400, "fill all the information"));
   }
 
+
   try {
     const FindUser = await User.findOne({email});
     if(FindUser){
