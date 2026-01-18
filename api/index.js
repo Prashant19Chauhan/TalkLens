@@ -15,7 +15,7 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(express.json());
-const port = 3000;
+const port = 6000;
 
 // Initialize Firebase
 initializeFirebase();

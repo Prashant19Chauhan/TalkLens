@@ -1,5 +1,5 @@
 import admin from "firebase-admin";
-import User from "../models/User.js";
+import User from "../models/user.js";
 import { errorHandler } from "../utils/error.js";
 
 export const register = async (req, res, next) => {
