@@ -87,7 +87,7 @@ export const googleAuth = async (req, res, next) => {
     if(!FindUser){
       console.log(2)
       const newUser = new User({
-        uid: uid,
+        firebaseId: uid,
         name: name,
         email: email,
       })
