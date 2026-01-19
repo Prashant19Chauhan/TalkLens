@@ -106,10 +106,7 @@ export const googleAuth = async (req, res, next) => {
     } else if (error.code === 'auth/wrong-password') {
       return next(errorHandler(401, 'Invalid password.' ))
     }
-
-    return res.status(500).json({
-      message: error.message,
-      error: error
-    });
+    console.log(error)
+    return next(errorHandler(500, 'An error occurred during login.' ))
   }
 };
