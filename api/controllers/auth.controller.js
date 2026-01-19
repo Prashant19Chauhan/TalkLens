@@ -71,6 +71,7 @@ export const login = async (req, res, next) => {
 
 export const googleAuth = async (req, res, next) => {
   const { idToken } = req.body;
+  console.log(idToken);
   
   try {
     if (!idToken) {
@@ -78,6 +79,7 @@ export const googleAuth = async (req, res, next) => {
     }
 
     const decodedToken = await admin.auth().verifyIdToken(idToken);
+    console.log(decodedToken);
 
     const { uid, email, name } = decodedToken;
 
@@ -91,7 +93,7 @@ export const googleAuth = async (req, res, next) => {
 
       await newUser.save();
     }
-
+    console.log(FindUser);
     return res
               .status(201)
               .cookie("access_token", idToken,{httpOnly: true,})
