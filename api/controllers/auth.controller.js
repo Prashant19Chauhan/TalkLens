@@ -85,6 +85,7 @@ export const googleAuth = async (req, res, next) => {
 
     const FindUser = await User.findOne({email});
     if(!FindUser){
+      console.log(2)
       const newUser = new User({
         uid: uid,
         name: name,
@@ -93,7 +94,7 @@ export const googleAuth = async (req, res, next) => {
 
       await newUser.save();
     }
-    console.log(FindUser);
+    console.log(1);
     return res
               .status(201)
               .cookie("access_token", idToken,{httpOnly: true,})
