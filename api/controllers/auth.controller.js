@@ -91,7 +91,7 @@ export const googleAuth = async (req, res, next) => {
         name: name,
         email: email,
       })
-
+      console.log(3)
       await newUser.save();
     }
     console.log(1);
