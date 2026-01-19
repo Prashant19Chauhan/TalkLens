@@ -107,6 +107,9 @@ export const googleAuth = async (req, res, next) => {
       return next(errorHandler(401, 'Invalid password.' ))
     }
 
-    return next(errorHandler(500, 'An error occurred during login.' ))
+    return res.status(500).json({
+      message: error.message,
+      error: error
+    });
   }
 };
